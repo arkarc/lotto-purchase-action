@@ -2,7 +2,7 @@
 
 **실제 동행복권 계정으로 로또 6/45를 자동 구매하는 GitHub Action입니다.**
 
-매주 정해진 시간에 GitHub Actions가 실행되어, 실제 동행복권 사이트에 로그인하고 로또를 구매합니다. 구매 결과는 GitHub Issue로 기록되며, 추첨 후 당첨 여부도 자동으로 확인됩니다.
+매주 정해진 시간에 GitHub Actions가 실행되어, 실제 동행복권 사이트에 로그인하고 로또를 구매합니다. 구매 결과는 [GitHub Issue](https://github.com/kkd927/lotto-purchase-action/issues/1)로 기록되며, 추첨 후 당첨 여부도 자동으로 확인됩니다.
 
 ## ✨ 주요 기능
 
@@ -13,7 +13,7 @@
 | 🔀 **자동 + 수동 조합** | 한 번에 자동과 수동을 섞어서 구매 |
 | 🧩 **커스텀 로직** | JS 파일 하나로 나만의 구매 전략을 자유롭게 작성 |
 | 💡 **AI 연동** | Gemini API로 추천 번호를 받아 구매하는 예제 포함 |
-| 📋 **결과 기록** | 구매 내역이 GitHub Issue에 자동 정리 |
+| 📋 **결과 기록** | 구매 내역이 GitHub Issue에 자동 정리 ([예시](https://github.com/kkd927/lotto-purchase-action/issues/1)) |
 | 🔔 **텔레그램 알림** | 구매/당첨 결과를 텔레그램으로 알림 (선택) |
 
 ## 🚀 바로 시작
