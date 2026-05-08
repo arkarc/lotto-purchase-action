@@ -1,22 +1,19 @@
 /**
- * 03. 자동 + 수동 조합 예제
+ * 05. 자동 + Gemini 추천 번호 구매
  *
- * 자동 구매 후, 직접 지정한 번호를 추가로 구매합니다.
- * custom workflow에서 API를 조합하는 가장 기본적인 패턴입니다.
- * 이 실행이 끝나면 구매 결과는 GitHub Issue 1개로 정리됩니다.
- */
-/**
- * 04. Gemini 추천 번호 예제
+ * 먼저 자동 구매를 진행한 뒤,
+ * Gemini가 추천한 번호로 추가 구매를 진행합니다.
  *
  * GEMINI_API_KEY 환경변수가 필요합니다.
- * Gemini가 추천한 번호 1게임을 수동 구매합니다.
- * 응답이 비어 있거나 형식이 맞지 않으면 FALLBACK_NUMBERS를 사용합니다.
+ * Gemini 응답이 비어 있거나 형식이 올바르지 않으면
+ * 해당 게임은 자동 구매로 대체됩니다.
  *
  * 필요 설정:
- * - GitHub Secrets에 GEMINI_API_KEY 추가 필요
- * - workflow yml에서 env: GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }} 설정
+ * - GitHub Secrets에 GEMINI_API_KEY 추가
+ * - workflow yml에 아래 env 설정 추가
+ *   GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
  *
- * 이 실행이 끝나면 구매 결과는 GitHub Issue 1개로 정리됩니다.
+ * 실행이 완료되면 구매 결과는 GitHub Issue 1개로 정리됩니다.
  */
 
 const AUTO_GAME_COUNT = 1;
