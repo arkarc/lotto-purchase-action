@@ -34,3 +34,5 @@ jobs:
           # workflow-file: custom-workflows/02-manual-fixed-numbers.js
           # workflow-file: custom-workflows/03-auto-plus-manual.js
           workflow-file: custom-workflows/05-auto-plus-gemini-recommendation.js
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
