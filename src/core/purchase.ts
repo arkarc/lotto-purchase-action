@@ -140,6 +140,13 @@ async function waitForPurchaseResults(page: Page): Promise<void> {
 ///////////////////////////////////////////////
 ////////////// ChatGPT 코드 시작 //////////////
 //////////////////////////////////////////////
+class PurchaseBlockedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'PurchaseBlockedError';
+  }
+}
+
 function classifyPurchaseBlockReason(bodyText: string): string | null {
   const normalized = bodyText.replace(/\s+/g, ' ');
 
