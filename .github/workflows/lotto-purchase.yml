@@ -1,4 +1,4 @@
-name: 로또 구매 (자동 + Gemini 추천 + 스케줄)
+name: 로또 구매 (자동 OR Gemini 추천 랜덤 + 스케줄)
 on:
   schedule:
     # 월~금 UTC 00:00 (한국 시간 월~금 09:00)
