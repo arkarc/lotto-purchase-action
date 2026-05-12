@@ -93,6 +93,39 @@ async function waitForPurchaseResults(page: Page): Promise<void> {
     throw new Error(`Failed to load purchase results (${await getPurchaseDiagnostics(page)})`);
   }
 }
+///////////////////////////////////////////////
+////////////// ChatGPT 코드 시작 //////////////
+//////////////////////////////////////////////
+async function clickIfVisible(page: Page, selector: string, timeout = 5000): Promise<boolean> {
+  const locator = page.locator(selector).first();
+  const isVisible = await locator.isVisible({ timeout }).catch(() => false);
+
+  if (!isVisible) {
+    return false;
+  }
+
+  await locator.click({ timeout }).catch(() => undefined);
+  return true;
+}
+
+async function confirmPurchaseAndWaitForResults(page: Page): Promise<void> {
+  console.log('[Purchase] Clicking purchase confirm button');
+
+  const confirmed = await clickIfVisible(page, SELECTORS.PURCHASE_CONFIRM_BTN, 10000);
+  if (!confirmed) {
+    throw new Error(`Purchase confirm button was not visible (${await getPurchaseDiagnostics(page)})`);
+  }
+
+  // 동행복권 페이지가 AJAX/레이어 방식이라 결과 DOM이 늦게 뜨는 경우가 있음
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => undefined);
+  await page.waitForTimeout(2000);
+
+  console.log('[Purchase] Waiting for purchase results');
+  await waitForPurchaseResults(page);
+}
+/////////////////////////////////////////////
+////////////// ChatGPT 코드 끝 //////////////
+////////////////////////////////////////////
 
 // Auto purchase function
 export async function purchaseAuto(session: BrowserSession, amount: number): Promise<number[][]> {
@@ -117,6 +150,7 @@ export async function purchaseAuto(session: BrowserSession, amount: number): Pro
   await page.selectOption(SELECTORS.PURCHASE_AMOUNT_SELECT, String(amount));
   await page.click(SELECTORS.PURCHASE_AMOUNT_CONFIRM_BTN);
 
+  /* ChatGPT 코드로 교체
   // Purchase
   console.log('[Purchase] Clicking purchase button');
   await page.click(SELECTORS.PURCHASE_BTN);
@@ -125,6 +159,18 @@ export async function purchaseAuto(session: BrowserSession, amount: number): Pro
   // Wait for results
   console.log('[Purchase] Waiting for purchase results');
   await waitForPurchaseResults(page);
+  */
+  ///////////////////////////////////////////////
+  ////////////// ChatGPT 코드 시작 //////////////
+  //////////////////////////////////////////////
+  // Purchase
+  console.log('[Purchase] Clicking purchase button');
+  await page.click(SELECTORS.PURCHASE_BTN);
+  
+  await confirmPurchaseAndWaitForResults(page);
+  /////////////////////////////////////////////
+  ////////////// ChatGPT 코드 끝 //////////////
+  ////////////////////////////////////////////
 
   // Parse results
   const result = await page.$$eval(SELECTORS.PURCHASE_NUMBER_LIST, elems => {
@@ -195,6 +241,7 @@ export async function purchaseManual(session: BrowserSession, numbers: number[][
     console.log(`[Purchase] Game ${gameIdx + 1} added to slot ${slotLabels[gameIdx]}`);
   }
 
+  /* ChatGPT 코드로 교체
   // Purchase
   console.log('[Purchase] Clicking purchase button');
   await page.click(SELECTORS.PURCHASE_BTN);
@@ -203,6 +250,18 @@ export async function purchaseManual(session: BrowserSession, numbers: number[][
   // Wait for results
   console.log('[Purchase] Waiting for purchase results');
   await waitForPurchaseResults(page);
+  */
+  ///////////////////////////////////////////////
+  ////////////// ChatGPT 코드 시작 //////////////
+  //////////////////////////////////////////////
+  // Purchase
+  console.log('[Purchase] Clicking purchase button');
+  await page.click(SELECTORS.PURCHASE_BTN);
+  
+  await confirmPurchaseAndWaitForResults(page);
+  /////////////////////////////////////////////
+  ////////////// ChatGPT 코드 끝 //////////////
+  ////////////////////////////////////////////
 
   // Parse results
   const result = await page.$$eval(SELECTORS.PURCHASE_NUMBER_LIST, elems => {
