@@ -1,3 +1,10 @@
+///////////////////////////////////////////////
+////////////// ChatGPT 코드 시작 //////////////
+//////////////////////////////////////////////
+import fs from 'fs/promises';
+/////////////////////////////////////////////
+////////////// ChatGPT 코드 끝 //////////////
+////////////////////////////////////////////
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import timezone from 'dayjs/plugin/timezone';
@@ -56,6 +63,42 @@ async function getPurchaseDiagnostics(page: Page): Promise<string> {
 
   return [`URL: ${page.url()}`, `title: ${title}`, `bodySnippet: ${bodySnippet || 'none'}`].join(', ');
 }
+///////////////////////////////////////////////
+////////////// ChatGPT 코드 시작 //////////////
+//////////////////////////////////////////////
+async function dumpPurchaseDebug(page: Page, label: string): Promise<void> {
+  const dir = 'debug-artifacts';
+  await fs.mkdir(dir, { recursive: true }).catch(() => undefined);
+
+  const safeLabel = label.replace(/[^a-zA-Z0-9_-]/g, '_');
+  const timestamp = Date.now();
+
+  await page.screenshot({
+    path: `${dir}/${timestamp}-${safeLabel}.png`,
+    fullPage: true,
+  }).catch(error => {
+    console.warn(`[Purchase][Debug] Failed to save screenshot: ${error}`);
+  });
+
+  const html = await page.content().catch(() => '');
+  await fs.writeFile(`${dir}/${timestamp}-${safeLabel}.html`, html).catch(error => {
+    console.warn(`[Purchase][Debug] Failed to save html: ${error}`);
+  });
+
+  const bodyText = await page
+    .locator('body')
+    .innerText()
+    .catch(() => '');
+
+  await fs.writeFile(`${dir}/${timestamp}-${safeLabel}.txt`, bodyText).catch(error => {
+    console.warn(`[Purchase][Debug] Failed to save text: ${error}`);
+  });
+
+  console.log(`[Purchase][Debug] Saved debug artifacts: ${dir}/${timestamp}-${safeLabel}.*`);
+}
+/////////////////////////////////////////////
+////////////// ChatGPT 코드 끝 //////////////
+////////////////////////////////////////////
 
 async function openPurchasePage(session: BrowserSession, mode: 'auto' | 'manual'): Promise<Page> {
   const page = session.getPage();
@@ -125,6 +168,8 @@ async function waitForPurchaseResults(page: Page): Promise<void> {
   ];
 
   const matchedMessages = knownMessages.filter(message => bodyText.includes(message));
+
+  await dumpPurchaseDebug(page, 'purchase-result-timeout');
 
   throw new Error(
     `Failed to load purchase results. ` +
