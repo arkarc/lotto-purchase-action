@@ -39,3 +39,16 @@ jobs:
           workflow-file: custom-workflows/05-auto-plus-gemini-recommendation.js
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      ################################
+      ####### ChatGPT 코드 시작 #######
+      ################################
+      - name: Upload debug artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: purchase-debug-artifacts
+          path: debug-artifacts/
+          if-no-files-found: ignore
+      ###############################
+      ####### ChatGPT 코드 끝 #######
+      ###############################
