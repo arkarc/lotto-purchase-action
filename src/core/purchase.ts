@@ -86,16 +86,53 @@ async function openPurchasePage(session: BrowserSession, mode: 'auto' | 'manual'
 
   throw new Error(`Failed to load purchase page for ${mode} mode (${await getPurchaseDiagnostics(page)})`);
 }
-
+/* ChatGPT 코드로 변경
 async function waitForPurchaseResults(page: Page): Promise<void> {
   const loaded = await waitForVisible(page, SELECTORS.PURCHASE_NUMBER_LIST, PURCHASE_RESULT_TIMEOUT);
   if (!loaded) {
     throw new Error(`Failed to load purchase results (${await getPurchaseDiagnostics(page)})`);
   }
 }
+*/
 ///////////////////////////////////////////////
 ////////////// ChatGPT 코드 시작 //////////////
 //////////////////////////////////////////////
+async function waitForPurchaseResults(page: Page): Promise<void> {
+  const loaded = await waitForVisible(page, SELECTORS.PURCHASE_NUMBER_LIST, PURCHASE_RESULT_TIMEOUT);
+  if (loaded) {
+    return;
+  }
+
+  const bodyText = await page
+    .locator('body')
+    .innerText()
+    .then(text => text.replace(/\s+/g, ' '))
+    .catch(() => '');
+
+  const knownMessages = [
+    '잔액',
+    '한도',
+    '구매가능',
+    '구매 가능',
+    '로그인',
+    '오류',
+    '실패',
+    '마감',
+    '판매시간',
+    '확인',
+    '예매',
+    '복권',
+  ];
+
+  const matchedMessages = knownMessages.filter(message => bodyText.includes(message));
+
+  throw new Error(
+    `Failed to load purchase results. ` +
+      `matchedMessages=${JSON.stringify(matchedMessages)} ` +
+      `(${await getPurchaseDiagnostics(page)})`,
+  );
+}
+
 async function clickIfVisible(page: Page, selector: string, timeout = 5000): Promise<boolean> {
   const locator = page.locator(selector).first();
   const isVisible = await locator.isVisible({ timeout }).catch(() => false);
@@ -111,16 +148,32 @@ async function clickIfVisible(page: Page, selector: string, timeout = 5000): Pro
 async function confirmPurchaseAndWaitForResults(page: Page): Promise<void> {
   console.log('[Purchase] Clicking purchase confirm button');
 
+  let dialogMessage = '';
+
+  const dialogPromise = page
+    .waitForEvent('dialog', { timeout: 5000 })
+    .then(async dialog => {
+      dialogMessage = dialog.message();
+      console.log(`[Purchase] Accepting browser dialog: ${dialogMessage}`);
+      await dialog.accept();
+      return true;
+    })
+    .catch(() => false);
+
   const confirmed = await clickIfVisible(page, SELECTORS.PURCHASE_CONFIRM_BTN, 10000);
   if (!confirmed) {
     throw new Error(`Purchase confirm button was not visible (${await getPurchaseDiagnostics(page)})`);
   }
 
-  // 동행복권 페이지가 AJAX/레이어 방식이라 결과 DOM이 늦게 뜨는 경우가 있음
-  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => undefined);
-  await page.waitForTimeout(2000);
+  const dialogHandled = await dialogPromise;
 
+  // 구매 확인 버튼 클릭 뒤 사이트가 잠깐 멈추거나 AJAX로 결과를 만드는 경우가 있어 여유를 둠
+  await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => undefined);
+  await page.waitForTimeout(3000);
+
+  console.log(`[Purchase] Dialog handled: ${dialogHandled}${dialogMessage ? `, message: ${dialogMessage}` : ''}`);
   console.log('[Purchase] Waiting for purchase results');
+
   await waitForPurchaseResults(page);
 }
 /////////////////////////////////////////////
