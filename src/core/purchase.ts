@@ -140,6 +140,48 @@ async function waitForPurchaseResults(page: Page): Promise<void> {
 ///////////////////////////////////////////////
 ////////////// ChatGPT 코드 시작 //////////////
 //////////////////////////////////////////////
+function classifyPurchaseBlockReason(bodyText: string): string | null {
+  const normalized = bodyText.replace(/\s+/g, ' ');
+
+  if (
+    normalized.includes('구매한도') ||
+    normalized.includes('구매 한도') ||
+    normalized.includes('한도를 초과') ||
+    normalized.includes('한도초과') ||
+    normalized.includes('한도 초과') ||
+    normalized.includes('구매 한도를 모두')
+  ) {
+    return '구매 한도 초과';
+  }
+
+  if (
+    normalized.includes('잔액') ||
+    normalized.includes('예치금') ||
+    normalized.includes('충전') ||
+    normalized.includes('부족')
+  ) {
+    return '잔액 부족';
+  }
+
+  if (
+    normalized.includes('판매시간') ||
+    normalized.includes('판매 시간') ||
+    normalized.includes('구매 가능 시간이 아닙니다') ||
+    normalized.includes('마감')
+  ) {
+    return '구매 가능 시간 아님';
+  }
+
+  if (
+    normalized.includes('로그인') &&
+    !normalized.includes('로그아웃')
+  ) {
+    return '로그인 세션 만료';
+  }
+
+  return null;
+}
+
 async function waitForPurchaseResults(page: Page): Promise<void> {
   const loaded = await waitForVisible(page, SELECTORS.PURCHASE_NUMBER_LIST, PURCHASE_RESULT_TIMEOUT);
   if (loaded) {
@@ -152,30 +194,17 @@ async function waitForPurchaseResults(page: Page): Promise<void> {
     .then(text => text.replace(/\s+/g, ' '))
     .catch(() => '');
 
-  const knownMessages = [
-    '잔액',
-    '한도',
-    '구매가능',
-    '구매 가능',
-    '로그인',
-    '오류',
-    '실패',
-    '마감',
-    '판매시간',
-    '확인',
-    '예매',
-    '복권',
-  ];
+  const blockReason = classifyPurchaseBlockReason(bodyText);
 
-  const matchedMessages = knownMessages.filter(message => bodyText.includes(message));
+  await dumpPurchaseDebug(page, blockReason ? `purchase-blocked-${blockReason}` : 'purchase-result-timeout');
 
-  await dumpPurchaseDebug(page, 'purchase-result-timeout');
+  if (blockReason) {
+    throw new PurchaseBlockedError(
+      `[Purchase] 구매가 진행되지 않았습니다: ${blockReason} (${await getPurchaseDiagnostics(page)})`,
+    );
+  }
 
-  throw new Error(
-    `Failed to load purchase results. ` +
-      `matchedMessages=${JSON.stringify(matchedMessages)} ` +
-      `(${await getPurchaseDiagnostics(page)})`,
-  );
+  throw new Error(`Failed to load purchase results (${await getPurchaseDiagnostics(page)})`);
 }
 
 async function clickIfVisible(page: Page, selector: string, timeout = 5000): Promise<boolean> {
