@@ -3,7 +3,7 @@ on:
   schedule:
     # 월~금 UTC 00:00 (한국 시간 월~금 09:00)
     # https://elmah.io/tools/cron-parser/
-    - cron: '7 0 * * 1-5'
+    - cron: '0 0 * * 1-5'
   workflow_dispatch: # Allow manual trigger
 
 permissions:
